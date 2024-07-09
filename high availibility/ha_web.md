@@ -1,4 +1,8 @@
-mysecret: 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
+# =========================================================================== #
+#                                                                             #
+#                 HAUTE DISPONIBILITE DE SERVEUR WEB                          #
+#                                                                             #
+# =========================================================================== #
 
 Pour mettre en place un système de load balancing et de fail-over avec Nginx et Apache, et assurer la synchronisation des serveurs backend pour que les changements soient visibles après le redémarrage d'un serveur en panne, vous pouvez suivre les étapes décrites ci-dessous :
 
