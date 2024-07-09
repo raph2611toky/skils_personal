@@ -26,7 +26,7 @@ IP: 192.168.1.3
 Serveur Backend 2 (Serveur Web Apache)
 IP: 192.168.1.4
 
-TOPOLOGIE PHYSIQUE                                                                           TOPOLOGIE LOGIQUE
+TOPOLOGIE PHYSIQUE                                               |                                 TOPOLOGIE LOGIQUE
 
                         ----------------                                                    ----------------
                         |    ROUTER    |                                                    |    CLIENT    |
