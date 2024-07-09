@@ -141,6 +141,9 @@ Activer le site et redémarrer Apache :
 # sudo a2ensite 000-default
 # sudo systemctl restart apache2
 
+PHASE DE TESTE:
+Maintenant, on peut tester si ca marche, via le navigateur d'un client qui peut pinguer ou acceder au serveur en tapant  http://www.site-static.com sur le navigateur ou en faisant curl http://www.site-static.com dans terminale.
+
 
   3 -- ETAPE DE SYNCHRONISATION DES DEUX SERVEURS BACKEND
   -------------------------------------------------------
