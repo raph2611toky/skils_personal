@@ -28,10 +28,11 @@ installer mysql-server
 
 ajoutez/modifiez les lignes suivantes :
 
-[mysqld]
-server-id = 1
-log_bin = /var/log/mysql/mysql-bin.log
-bind-address = 0.0.0.0
+# [mysqld]
+# server-id = 1
+# log_bin = /var/log/mysql/mysql-bin.log
+# bind-address = 0.0.0.0
+# max_allowed_packet = 64M
 
 puis redemarer le service mysql
 # sudo systemctl restart mysql
@@ -64,6 +65,7 @@ Modifier le fichier de configuration MySQL/MariaDB :
 Éditez le fichier /etc/mysql/my.cnf ou /etc/mysql/mariadb.conf.d/50-server.cnf et ajoutez/modifiez les lignes suivantes :
 # [mysqld]
 # server-id = 2
+# max_allowed_packet = 64M
 
 Redémarrer le service MySQL/MariaDB :
 # sudo systemctl restart mysql
@@ -188,3 +190,15 @@ Test de la Réplication
 Sur le Master (192.168.15.77) :
 
 Créez une base de données et une table, puis insérez des données :
+CREATE DATABASE test_db;
+USE test_db;
+CREATE TABLE test_table (id INT PRIMARY KEY, data VARCHAR(100));
+INSERT INTO test_table (id, data) VALUES (1, 'Hello, replication!');
+
+Sur le Slave (192.168.15.76) :
+Vérifiez que la base de données, la table et les données ont été répliquées :
+
+STOP SLAVE;
+RESET SLAVE;
+
+ca marche!
