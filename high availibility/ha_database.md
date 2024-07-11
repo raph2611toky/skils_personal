@@ -166,3 +166,138 @@ STOP SLAVE;
 RESET SLAVE;
 
 ca marche!
+
+
+Pour rendre le site dynamique en utilisant PHP et MySQL, vous devez effectuer plusieurs modifications et ajouts. Voici les étapes détaillées pour transformer le site statique en un site dynamique :
+
+1. Configurer le Serveur Web avec PHP et MySQL
+Installation de PHP et MySQL
+Sur vos serveurs backend, installez PHP et MySQL :
+
+bash
+Copier le code
+sudo apt update
+sudo apt install php libapache2-mod-php php-mysql mysql-server
+Configuration de la Base de Données
+Connectez-vous à MySQL et configurez la base de données :
+
+bash
+Copier le code
+sudo mysql -u root -p
+Créez une base de données et un utilisateur :
+
+sql
+Copier le code
+CREATE DATABASE projet_clement;
+CREATE USER 'user_clement'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON projet_clement.* TO 'user_clement'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+Créez une table pour stocker les informations dynamiques :
+
+sql
+Copier le code
+USE projet_clement;
+CREATE TABLE sections (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    section_name VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL
+);
+2. Modifier les Fichiers HTML pour PHP
+Renommez votre fichier index.html en index.php et modifiez-le pour inclure du PHP afin de charger les données dynamiquement.
+
+php
+Copier le code
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projet de Mr Clément</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; color: #333; }
+        header { background-color: #005f73; color: white; text-align: center; padding: 2em 0; }
+        nav { background-color: #0a9396; display: flex; justify-content: center; padding: 1em 0; }
+        nav a { color: white; margin: 0 15px; text-decoration: none; font-weight: bold; }
+        nav a:hover { text-decoration: underline; }
+        .container { padding: 2em; }
+        .section { margin: 2em 0; padding: 2em; background-color: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        footer { background-color: #005f73; color: white; text-align: center; padding: 1em 0; position: fixed; width: 100%; bottom: 0; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Projet d'Administration Reseau Linux</h1>
+        <p>Solutions de Haute Disponibilité et Réseaux</p>
+    </header>
+    <nav>
+        <a href="#ha">Haute Disponibilité</a>
+        <a href="#web">Web server</a>
+        <a href="#database">Base de Données</a>
+        <a href="#lacp">LACP Cisco</a>
+        <a href="#dualwan">Dual WAN</a>
+    </nav>
+    <div class="container">
+        <?php
+        $conn = new mysqli('localhost', 'user_clement', 'password', 'projet_clement');
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
+        $sql = "SELECT section_name, content FROM sections";
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                echo "<div class='section' id='". strtolower($row["section_name"]) ."'>";
+                echo "<h2>" . $row["section_name"] . "</h2>";
+                echo "<p>" . $row["content"] . "</p>";
+                echo "</div>";
+            }
+        } else {
+            echo "0 results";
+        }
+        $conn->close();
+        ?>
+    </div>
+    <footer>
+        <p>&copy; 2024 Projet de Mr Clément. Tous droits réservés.</p>
+    </footer>
+</body>
+</html>
+3. Insérer des Données dans la Base de Données
+Ajoutez du contenu dans votre base de données pour tester :
+
+sql
+Copier le code
+INSERT INTO sections (section_name, content) VALUES
+('Haute Disponibilité', 'La haute disponibilité est essentielle pour garantir que les services restent disponibles en cas de panne. Nous utilisons des techniques de redondance et de basculement pour assurer une disponibilité continue.'),
+('Web', 'Les applications web doivent être robustes et réactives. Nous implémentons des architectures évolutives et résilientes pour assurer une performance optimale et une disponibilité continue.'),
+('Base de Données', 'Les bases de données sont le cœur de nombreuses applications. Nous utilisons des stratégies de réplication et de sauvegarde pour assurer la continuité des données et leur disponibilité.'),
+('LACP Cisco', 'Le protocole LACP (Link Aggregation Control Protocol) permet d\'agréger plusieurs liaisons Ethernet en une seule, offrant une bande passante accrue et une redondance en cas de défaillance d\'un lien.'),
+('Dual WAN', 'La configuration Dual WAN permet d\'utiliser deux connexions Internet simultanément, offrant une redondance et une répartition de la charge pour une meilleure performance réseau.');
+4. Synchronisation des Serveurs Backend
+Utilisez rsync pour synchroniser les fichiers PHP et les configurations sur les serveurs backend :
+
+Créez un script rsync sur chaque serveur pour synchroniser les fichiers depuis le serveur principal :
+
+bash
+Copier le code
+#!/bin/bash
+rsync -avz /var/www/site-static/ 192.168.1.76:/var/www/site-static/
+rsync -avz /var/www/site-static/ 192.168.1.78:/var/www/site-static/
+Rendre le script exécutable et ajouter une tâche cron pour exécuter le script régulièrement :
+
+bash
+Copier le code
+chmod +x /usr/local/bin/sync_files.sh
+crontab -e
+Ajoutez la ligne suivante dans cron pour exécuter le script toutes les 5 minutes :
+
+bash
+Copier le code
+*/5 * * * * /usr/local/bin/sync_files.sh
+5. Tests et Vérifications
+Accédez à votre site web via le navigateur pour vérifier que les données dynamiques s'affichent correctement.
+Simulez des pannes de serveurs pour tester la haute disponibilité et la redondance.
+Ces étapes vous permettront de transformer votre site statique en un site dynamique avec une haute disponibilité en utilisant PHP et MySQL.
+
+
