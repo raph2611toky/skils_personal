@@ -595,3 +595,12 @@ exten => 102,1,Dial(PJSIP/5022,20)
 ```
 
 - `Dial(PJSIP/5021,20)`: Compose les extensions pour l'inscription.
+
+
+```plaintext
+---
+
+Copyright © TOKY Nandrasana
+Étudiant de l'École Nationale de l'Informatique
+Date : 15 août 2024
+```
