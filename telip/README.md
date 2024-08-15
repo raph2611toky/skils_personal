@@ -276,28 +276,32 @@ sudo nano /etc/asterisk/users.conf
 Ajoutez les configurations suivantes :
 ```ini
 [default_template](!)
-hasvoicemail = yes
-hassip = yes
-hasiax = no
-hash323 = no
-canpark = yes
-transfer = yes
-callwaiting = yes
-cancallforward = yes
-callreturn = yes
-callgroup = 1
-pickupgroup = 1
-nat = never
-disallow = all
-allow = ulaw
+; Template de configuration par défaut pour les extensions
+
+hasvoicemail = yes        ; Activer la messagerie vocale
+hassip = yes              ; Activer le support SIP (Session Initiation Protocol)
+hasiax = no               ; Désactiver le support IAX (Inter-Asterisk eXchange)
+hash323 = no              ; Désactiver le support H.323
+canpark = yes             ; Permettre le parking des appels
+transfer = yes            ; Permettre le transfert des appels
+callwaiting = yes         ; Activer l'attente d'appel
+cancallforward = yes      ; Permettre le transfert d'appel
+callreturn = yes          ; Activer le rappel des appels
+callgroup = 1             ; Groupe d'appels auquel cette extension appartient (1 par défaut)
+pickupgroup = 1           ; Groupe de ramassage auquel cette extension appartient (1 par défaut)
+nat = never               ; Paramètre NAT (Network Address Translation) : 'never' signifie ne pas utiliser NAT
+disallow = all            ; Interdire tous les codecs audio par défaut
+allow = ulaw              ; Autoriser uniquement le codec mu-law (ulaw) pour l'audio
 
 [6002](default_template)
-fullname = nom complet
-username = surnom
-email = mon.addresse.email@gmail.com
-mailbox = 6002
-vm_secret = 2623
-context = etudiant
+; Configuration spécifique pour l'extension 6002
+
+fullname = nom complet                ; Nom complet de l'utilisateur
+username = surnom                    ; Nom d'utilisateur pour l'authentification
+email = mon.addresse.email@gmail.com  ; Adresse e-mail de l'utilisateur
+mailbox = 6002                       ; Identifiant de la boîte vocale
+vm_secret = 2623                     ; Mot de passe pour la boîte vocale
+context = etudiant                   ; Contexte dans lequel cette extension est définie
 ```
 
 ### 6.2 Configuration de la Messagerie Vocale
