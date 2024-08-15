@@ -18,47 +18,146 @@ sudo apt-get install -y gnupg2 software-properties-common git curl wget libnewt-
 
 ### 3.1 Téléchargement et Extraction
 
-Téléchargez la dernière version d'Asterisk :
+**Téléchargement :**
+
+Téléchargez la dernière version d'Asterisk avec la commande suivante :
 ```bash
-wget http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-17-current.tar.gz
+wget http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-20-current.tar.gz
 ```
+**Ce que vous devriez voir si la commande réussit :**
+```
+--2024-08-15 14:23:01--  http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-20-current.tar.gz
+Résolution de downloads.asterisk.org (downloads.asterisk.org)… 198.51.100.123
+Connexion à downloads.asterisk.org (downloads.asterisk.org)|198.51.100.123|:80… connecté.
+Taille : 123456789 (118M) [application/x-gzip]
+Enregistre : « asterisk-20-current.tar.gz »
+
+asterisk-20-current.tar.gz   100%[================================================>] 118,00M  10,0MB/s    en 12s     
+
+2024-08-15 14:23:14 (9,83 MB/s) - « asterisk-20-current.tar.gz » sauvegardé [123456789/123456789]
+```
+
+**Extraction :**
 
 Extrayez le fichier téléchargé :
 ```bash
-tar -xvzf asterisk-17-current.tar.gz
+tar -xvzf asterisk-20-current.tar.gz
+```
+**Ce que vous devriez voir si la commande réussit :**
+```
+asterisk-20-current/
+asterisk-20-current/Makefile
+asterisk-20-current/configure
+...
 ```
 
 ### 3.2 Compilation et Installation
 
-Changez de répertoire et installez les modules MP3 requis :
+**Changement de répertoire :**
+
+Changez de répertoire vers le dossier extrait :
 ```bash
-cd asterisk-17.7.0
+cd asterisk-20-current
+```
+**Ce que vous devriez voir si la commande réussit :**
+Vous êtes maintenant dans le répertoire `asterisk-20-current`.
+
+**Installation des modules MP3 requis :**
+
+Installez les modules MP3 requis :
+```bash
 contrib/scripts/get_mp3_source.sh
 ```
+**Ce que vous devriez voir si la commande réussit :**
+```
+Fetching MP3 source files...
+...
+MP3 source files have been successfully fetched.
+```
+
+**Installation des autres dépendances nécessaires :**
 
 Installez les autres dépendances nécessaires :
 ```bash
 contrib/scripts/install_prereq install
 ```
+**Ce que vous devriez voir si la commande réussit :**
+```
+Installing required packages...
+...
+All required packages have been installed.
+```
+
+**Configuration :**
 
 Configurez Asterisk :
 ```bash
 ./configure
 ```
+**Ce que vous devriez voir si la commande réussit :**
+```
+configure: Menuselect build configuration successfully completed
 
-Sélectionnez et installez les modules recommandés :
+               .$$$$$$$$$$$$$$$=..      
+            .$7$7..          .7$$7:.    
+          .$$:.                 ,$7.7   
+        .$7.     7$$$$           .$$77  
+     ..$$.       $$$$$            .$$$7 
+    ..7$   .?.   $$$$$   .?.       7$$$.
+   $.$.   .$$$7. $$$$7 .7$$$.      .$$$.
+ .777.   .$$$$$$77$$$77$$$$$7.      $$$,
+ $$$~      .7$$$$$$$$$$$$$7.       .$$$.
+.$$7          .7$$$$$$$7:          ?$$$.
+$$$          ?7$$$$$$$$$$I        .$$$7 
+$$$       .7$$$$$$$$$$$$$$$$      :$$$. 
+$$$       $$$$$$7$$$$$$$$$$$$    .$$$.  
+$$$        $$$   7$$$7  .$$$    .$$$.   
+$$$$             $$$$7         .$$$.    
+7$$$7            7$$$$        7$$$      
+ $$$$$                        $$$       
+  $$$$7.                       $$  (TM)     
+   $$$$$$$.           .7$$$$$$  $$      
+     $$$$$$$$$$$$7$$$$$$$$$.$$$$$$      
+       $$$$$$$$$$$$$$$$.                
+```
+
+**Sélection et installation des modules recommandés :**
+
+Lancez l'outil de sélection des modules :
 ```bash
 make menuselect
 ```
-- Configurer Add-ons
-- Configurer AGI samples
-- Configurer Core sound Packages
-- Configurer Music on Hold File Packages
+**Ce que vous devriez voir si la commande réussit :**
+Un écran graphique ou un menu texte où vous pouvez sélectionner les modules à inclure. Vous devriez voir quelque chose comme :
+```
++--------------------------------------------------------+
+| Add-ons          | [*] Yes | [ ] No | [ ] Info...    |
+| AGI samples      | [*] Yes | [ ] No | [ ] Info...    |
+| Core sound       | [*] Yes | [ ] No | [ ] Info...    |
+| Music on Hold    | [*] Yes | [ ] No | [ ] Info...    |
++--------------------------------------------------------+
+```
+Après avoir sélectionné les modules, enregistrez les modifications et quittez l'outil.
+
+**Compilation :**
 
 Compilez Asterisk :
 ```bash
 make
 ```
+**Ce que vous devriez voir si la commande réussit :**
+```
+Making all...
+...
+ +--------- Asterisk Build Complete ---------+
+ + Asterisk has successfully been built, and +
+ + can be installed by running:              +
+ +                                           +
+ +                make install               +
+ +-------------------------------------------+
+```
+
+**Installation :**
 
 Installez Asterisk, les fichiers d'exemple et la configuration :
 ```bash
@@ -67,6 +166,29 @@ sudo make samples
 sudo make config
 sudo ldconfig
 ```
+**Ce que vous devriez voir si les commandes réussissent :**
+- Pour `make install` :
+  ```
+  Installing binaries...
+  ...
+  Installation complete.
+  ```
+- Pour `make samples` :
+  ```
+  Installing sample files...
+  ...
+  Sample files installed.
+  ```
+- Pour `make config` :
+  ```
+  Installing configuration files...
+  ...
+  Configuration files installed.
+  ```
+- Pour `ldconfig` :
+  ```
+  (aucun message spécifique n'est affiché si la commande réussit)
+  ```
 
 ## 4. Création d'un Utilisateur Asterisk (Optionnel mais Recommandé)
 
