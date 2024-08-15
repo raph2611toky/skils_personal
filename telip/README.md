@@ -578,9 +578,10 @@ Dirige les appels vers les services d'orientation selon le cycle :
 ```plaintext
 exten => 1,1,Dial(PJSIP/5016,20)
 exten => 1,2,Dial(PJSIP/5017,20)
-exten => 2,1,Dial(PJSIP/5011&PJSIP
+exten => 1,3,Hangup()
 
-/5012,20)
+exten => 2,1,Dial(PJSIP/5011&PJSIP/5012,20)
+exten => 2,2,Hangup()
 ```
 
 - `Dial(PJSIP/5016,20)`: Compose les extensions de l'orientation.
