@@ -263,7 +263,7 @@ Les configurations principales se trouvent dans `/etc/asterisk`, notamment :
 - `meetme.conf`
 - `users.conf`
 - `voicemail.conf`
-- `sip.conf`
+- `sip.conf` ou `pjsip.conf`
 - `moh.conf`
 - `features.conf`
 
