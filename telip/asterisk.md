@@ -1,226 +1,140 @@
-```markdown
-# ############################################################################### #
-#                                                                                 #
-#                      CONFIGURATION DE VOIP AVEC ASTERISK                        #
-#                                                                                 #
-# ############################################################################### #
+# Configuration de VoIP avec Asterisk
 
-## Mise à jour des packages système
+## 1. Mise à jour des Packages
 
-Tout d'abord, mettez à jour vos packages système vers la dernière version :
-
+Mettez à jour vos packages système avec la commande suivante :
 ```bash
 sudo apt-get update -y
 ```
 
-## Installation des dépendances requises
+## 2. Installation des Dépendances
 
 Installez les dépendances nécessaires pour Asterisk :
-
 ```bash
-sudo apt-get install gnupg2 software-properties-common git curl wget \
-libnewt-dev libssl-dev libncurses5-dev subversion libsqlite3-dev \
-build-essential libjansson-dev libxml2-dev uuid-dev -y
+sudo apt-get install -y gnupg2 software-properties-common git curl wget libnewt-dev libssl-dev libncurses5-dev subversion libsqlite3-dev build-essential libjansson-dev libxml2-dev uuid-dev
 ```
 
-## Installation d'Asterisk
+## 3. Installation d'Asterisk
 
-La dernière version d'Asterisk n'est pas disponible dans les référentiels par défaut d'Ubuntu 20.04. Vous devrez donc le télécharger et le compiler à partir de la source.
+### 3.1 Téléchargement et Extraction
 
-1. Téléchargez la dernière version d'Asterisk :
+Téléchargez la dernière version d'Asterisk :
+```bash
+wget http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-17-current.tar.gz
+```
 
-    ```bash
-    wget http://downloads.asterisk.org/pub/telephony/asterisk/asterisk-17-current.tar.gz
-    ```
+Extrayez le fichier téléchargé :
+```bash
+tar -xvzf asterisk-17-current.tar.gz
+```
 
-2. Extrayez le fichier téléchargé :
+### 3.2 Compilation et Installation
 
-    ```bash
-    tar -xvzf asterisk-17-current.tar.gz
-    ```
+Changez de répertoire et installez les modules MP3 requis :
+```bash
+cd asterisk-17.7.0
+contrib/scripts/get_mp3_source.sh
+```
 
-3. Changez le répertoire vers le répertoire extrait :
+Installez les autres dépendances nécessaires :
+```bash
+contrib/scripts/install_prereq install
+```
 
-    ```bash
-    cd asterisk-17.7.0
-    ```
+Configurez Asterisk :
+```bash
+./configure
+```
 
-4. Installez les modules MP3 requis :
+Sélectionnez et installez les modules recommandés :
+```bash
+make menuselect
+```
+- Configurer Add-ons
+- Configurer AGI samples
+- Configurer Core sound Packages
+- Configurer Music on Hold File Packages
 
-    ```bash
-    contrib/scripts/get_mp3_source.sh
-    ```
+Compilez Asterisk :
+```bash
+make
+```
 
-5. Installez les autres dépendances :
+Installez Asterisk, les fichiers d'exemple et la configuration :
+```bash
+sudo make install
+sudo make samples
+sudo make config
+sudo ldconfig
+```
 
-    ```bash
-    contrib/scripts/install_prereq install
-    ```
-
-    Vous devriez voir :
-
-    ```
-    #############################################
-    ## install completed successfully
-    #############################################
-    ```
-
-6. Configurez Asterisk :
-
-    ```bash
-    ./configure
-    ```
-
-    Vous devriez obtenir :
-
-    ```
-    configure: Menuselect build configuration successfully completed
-    ```
-
-7. Sélectionnez et installez les modules recommandés :
-
-    ```bash
-    make menuselect
-    ```
-
-    Configurez les options suivantes :
-    - Add-ons
-    - AGI samples
-    - Core sound Packages
-    - Music on Hold File Packages
-
-    Enregistrez et quittez.
-
-8. Compilez Asterisk :
-
-    ```bash
-    make
-    ```
-
-    Vous devriez voir :
-
-    ```
-    +--------- Asterisk Build Complete ---------+
-    + Asterisk has successfully been built, and +
-    + can be installed by running:              +
-    +                                           +
-    +                make install               +
-    +-------------------------------------------+
-    ```
-
-9. Installez Asterisk et les fichiers de configuration :
-
-    ```bash
-    sudo make install
-    sudo make samples
-    sudo make config
-    sudo ldconfig
-    ```
-
-## Création d'un utilisateur Asterisk (optionnel mais recommandé)
+## 4. Création d'un Utilisateur Asterisk (Optionnel mais Recommandé)
 
 Créez un utilisateur et un groupe pour Asterisk :
-
 ```bash
 sudo groupadd asterisk
 sudo useradd -r -d /var/lib/asterisk -g asterisk asterisk
 ```
 
-Ajoutez les utilisateurs `audio` et `dialout` au groupe Asterisk :
-
+Ajoutez l'utilisateur `asterisk` aux groupes `audio` et `dialout` :
 ```bash
 sudo usermod -aG audio,dialout asterisk
 ```
 
-Changez la propriété des répertoires de configuration Asterisk :
-
+Changez le propriétaire des répertoires d'Asterisk :
 ```bash
 sudo chown -R asterisk:asterisk /etc/asterisk
 sudo chown -R asterisk:asterisk /var/{lib,log,spool}/asterisk
 sudo chown -R asterisk:asterisk /usr/lib/asterisk
 ```
 
-## Configuration d'Asterisk
+## 5. Configuration d'Asterisk
 
-1. Modifiez le fichier `/etc/default/asterisk` pour définir l'utilisateur par défaut sur Asterisk :
+### 5.1 Modifier les Fichiers de Configuration
 
-    ```bash
-    sudo nano /etc/default/asterisk
-    ```
+Définissez l'utilisateur par défaut dans `/etc/default/asterisk` :
+```bash
+sudo nano /etc/default/asterisk
+```
+Décommentez les lignes suivantes :
+```ini
+AST_USER="asterisk"
+AST_GROUP="asterisk"
+```
 
-    Décommentez les lignes suivantes :
+Modifiez le fichier de configuration d'Asterisk `/etc/asterisk/asterisk.conf` :
+```bash
+sudo nano /etc/asterisk/asterisk.conf
+```
+Décommentez les lignes suivantes :
+```ini
+runuser = asterisk
+rungroup = asterisk
+```
 
-    ```plaintext
-    AST_USER="asterisk"
-    AST_GROUP="asterisk"
-    ```
+### 5.2 Démarrer et Activer le Service
 
-2. Modifiez le fichier de configuration par défaut d'Asterisk :
+Démarrez le service Asterisk et activez-le au démarrage :
+```bash
+sudo systemctl restart asterisk
+sudo systemctl enable asterisk
+```
 
-    ```bash
-    sudo nano /etc/asterisk/asterisk.conf
-    ```
+Vérifiez l'état du service :
+```bash
+sudo systemctl status asterisk
+```
 
-    Décommentez les lignes suivantes :
+### 5.3 Connexion à Asterisk
 
-    ```plaintext
-    runuser = asterisk ; The user to run as.
-    rungroup = asterisk ; The group to run as.
-    ```
+Vérifiez la connexion avec la commande suivante :
+```bash
+sudo asterisk -rvv
+```
 
-3. Redémarrez et activez le service Asterisk au démarrage :
+## 6. Configuration et Gestion des Extensions
 
-    ```bash
-    sudo systemctl restart asterisk
-    sudo systemctl enable asterisk
-    ```
-
-4. Vérifiez l'état du service Asterisk :
-
-    ```bash
-    sudo systemctl status asterisk
-    ```
-
-    Vous devriez obtenir :
-
-    ```plaintext
-    ? asterisk.service - LSB: Asterisk PBX
-         Loaded: loaded (/etc/init.d/asterisk; generated)
-         Active: active (running) since Mon 2020-10-19 12:39:41 UTC; 2min 49s ago
-           Docs: man:systemd-sysv-generator(8)
-        Process: 47946 ExecStart=/etc/init.d/asterisk start (code=exited, status=0/SUCCESS)
-          Tasks: 71 (limit: 4691)
-         Memory: 41.7M
-         CGroup: /system.slice/asterisk.service
-                 ??47965 /usr/sbin/asterisk -U asterisk -G asterisk
-    ```
-
-5. Vérifiez la connexion à Asterisk :
-
-    ```bash
-    sudo asterisk -rvv
-    ```
-
-    Vous devriez voir :
-
-    ```plaintext
-    Asterisk 20.8.1, Copyright (C) 1999 - 2022, Sangoma Technologies Corporation and others.
-    Created by Mark Spencer <markster@digium.com>
-    Asterisk comes with ABSOLUTELY NO WARRANTY; type 'core show warranty' for details.
-    This is free software, with components licensed under the GNU General Public
-    License version 2 and other licenses; you are welcome to redistribute it under
-    certain conditions. Type 'core show license' for details.
-    =========================================================================
-    Running as user 'asterisk'
-    Running under group 'asterisk'
-    Connected to Asterisk 20.8.1 currently running on ubuntuserver16 (pid = 608)
-    Unable to read or write history file '/root/.asterisk_history'
-    ubuntuserver16*CLI>
-    ```
-
-## Configuration et contrôle IP
-
-Les configurations d'Asterisk se trouvent dans `/etc/asterisk`. Les fichiers principaux à configurer sont :
+Les configurations principales se trouvent dans `/etc/asterisk`, notamment :
 - `cdr.conf`
 - `confbridge.conf`
 - `extensions.conf`
@@ -231,17 +145,14 @@ Les configurations d'Asterisk se trouvent dans `/etc/asterisk`. Les fichiers pri
 - `moh.conf`
 - `features.conf`
 
-### 1. Configuration des utilisateurs
+### 6.1 Configuration des Utilisateurs
 
-Pour configurer les utilisateurs VoIP dans Asterisk, éditez le fichier `/etc/asterisk/users.conf` :
-
+Éditez le fichier `/etc/asterisk/users.conf` :
 ```bash
 sudo nano /etc/asterisk/users.conf
 ```
-
 Ajoutez les configurations suivantes :
-
-```plaintext
+```ini
 [default_template](!)
 hasvoicemail = yes
 hassip = yes
@@ -267,34 +178,33 @@ vm_secret = 2623
 context = etudiant
 ```
 
-### 2. Configuration de la boîte vocale
+### 6.2 Configuration de la Messagerie Vocale
 
-Vérifiez les paramètres généraux dans le contexte `[general]`. Ajoutez les configurations suivantes pour les utilisateurs dans `voicemail.conf` :
-
-```plaintext
+Éditez le fichier `/etc/asterisk/voicemail.conf` :
+```bash
+sudo nano /etc/asterisk/voicemail.conf
+```
+Assurez-vous que le contexte `[etudiant]` contient :
+```ini
 [etudiant]
 6002 => 2623, jlady
 6001 => 2479, rtoky, raphaeltokinandrasana@gmail.com
 ```
 
-Sauvegardez et rechargez les configurations :
-
+Rechargez la configuration d'Asterisk :
 ```bash
 sudo asterisk -rvv
 > reload
 ```
 
-### 3. Configuration du DialPlan
+### 6.3 Configuration du Dial Plan
 
-Le DialPlan définit le routage des appels. Modifiez le fichier `/etc/asterisk/extensions.conf` :
-
+Éditez le fichier `/etc/asterisk/extensions.conf` :
 ```bash
 sudo nano /etc/asterisk/extensions.conf
 ```
-
-Ajoutez la configuration suivante :
-
-```plaintext
+Ajoutez les configurations suivantes :
+```ini
 [etudiant]
 exten => _60[0-9]X,1,Dial(SIP/${EXTEN},30)
 exten => _60[0-9]X,2,Voicemail(${EXTEN}@etudiant_vm)
@@ -303,32 +213,38 @@ exten => 6100,1,Answer()
 exten => 6100,2,VoiceMailMain(${CALLERID(num)}@etudiant_vm)
 ```
 
-### Notes sur les expressions et les applications
+### 6.4 Explication des Variables et Applications
 
-**Les numéros :**
-- `X` : chiffre de 0 à 9
-- `Z` : chiffre de 1 à 9
-- `N` : chiffre de 2 à 9
-- `.` : un ou plusieurs chiffres
-- `!` : zéro ou plusieurs chiffres
-- `[a-b]` : chiffre de a à b
-- `[abc]` : a, b ou c
+**Variables :**
+- `${EXTEN}` : Extension appelée
+- `${CONTEXT}` : Contexte actuel
+- `${CALLERID(name)}` : Nom de l'appelant
+- `${CALLERID(num)}` : Numéro de l'appelant
+- `${DATETIME}` : Date et heure actuelles
+- `${PRIORITY}` : Priorité actuelle de l'extension
 
-**Les applications :**
-- `Answer()`: décroche l'appel
-- `HangUp()`: raccroche l'appel
-- `Dial(type/identifier, timeout)`: compose un numéro avec un timeout
-- `
+**Applications :**
+- `Answer()` : Répond à l'appel
+- `HangUp()` : Raccroche l'appel
+- `Dial(type/identifier, timeout)` : Compose un numéro avec un délai
+- `VoiceMail(user@context)` : Accède à la messagerie vocale de l'utilisateur
+- `VoiceMailMain(user@context)` : Consulte la messagerie vocale de l'utilisateur
+- `Playback(sound-file)` : Joue un fichier sonore
+- `SetMusicOnHold(class)` : Joue de la musique en attente
+- `Goto(context, extension, priority)` : Passe à un contexte, une extension, une priorité spécifiques
 
-Voici le fichier `pjsip.conf` et le `extensions.conf` configurés pour votre scénario, avec une organisation et une mise en forme plus claire :
+---
 
-### pjsip.conf
 
-```ini
-# CONFIGURATION DE SIP ET DE SOFTPHONE
----------------------------------------
-; Général Configuration
+### Configuration SIP pour Asterisk
+
+#### Fichier `pjsip.conf` (pour Asterisk 20) ou `sip.conf` (pour Asterisk < 20)
+
+**1. Configuration Générale**
+
+```plaintext
 [general]
+; Général Configuration
 bindaddr=0.0.0.0
 bindport=5060
 srvlookup=no
@@ -337,9 +253,20 @@ disallow=all
 allow=ulaw
 allow=alaw
 allow=gsm
+```
 
-;========================== TEMPLATES CONFIGURATIONS ============================
+- `bindaddr=0.0.0.0`: Spécifie que le serveur SIP doit écouter sur toutes les interfaces réseau disponibles.
+- `bindport=5060`: Définit le port sur lequel le serveur SIP écoute, 5060 étant le port standard pour SIP.
+- `srvlookup=no`: Désactive la recherche DNS SRV pour la résolution des adresses des serveurs SIP.
+- `nat=never`: Indique que le serveur SIP ne doit pas modifier les adresses IP des paquets SIP, utile dans les environnements NAT (Network Address Translation).
+- `disallow=all`: Refuse tous les codecs par défaut.
+- `allow=ulaw`, `allow=alaw`, `allow=gsm`: Permet les codecs `ulaw` (G.711 mu-law), `alaw` (G.711 A-law), et `gsm` pour les appels.
 
+**2. Templates de Configuration**
+
+Les templates permettent de définir des configurations réutilisables pour les utilisateurs et les classes.
+
+```plaintext
 ; Template utilisateur
 [template-user](!)
 type=endpoint
@@ -349,50 +276,63 @@ allow=ulaw
 language=fr
 call_group=1
 pickup_group=1
+```
 
+- `type=endpoint`: Définit le type de cette configuration comme un point de terminaison SIP.
+- `context=etudiant`: Spécifie le contexte dans le plan de numérotation pour cet utilisateur.
+- `disallow=all` et `allow=ulaw`: Permet uniquement le codec `ulaw` pour cet utilisateur.
+- `language=fr`: Définit la langue par défaut pour les messages vocaux en français.
+- `call_group=1` et `pickup_group=1`: Configure des groupes pour les appels et les prises d'appels.
+
+Les templates pour les classes L1, L2, et L3 héritent du template `template-user` et définissent des contextes et des authentifications spécifiques :
+
+```plaintext
 ; Template pour la classe L1
 [template-L1](!,template-user)
 context=L1_class
 auth=L1_class_auth
+```
 
-; Template pour la classe L2
-[template-L2](!,template-user)
-context=L2_class
-auth=L2_class_auth
+**3. Authentification**
 
-; Template pour la classe L3
-[template-L3](!,template-user)
-context=L3_class
-auth=L3_class_auth
+Les templates d'authentification définissent les informations d'identification pour les utilisateurs :
 
+```plaintext
 [template-auth](!)
 type=auth
 auth_type=userpass
+```
 
+- `auth_type=userpass`: Spécifie que l'authentification se fait par nom d'utilisateur et mot de passe.
+
+**4. Adresses de Ressources (AOR)**
+
+Les templates d'AOR (Address of Record) définissent les adresses pour les points de terminaison :
+
+```plaintext
 [template-aor](!)
 type=aor
+```
 
+**5. Transport**
+
+Définit le transport UDP pour la communication SIP :
+
+```plaintext
 [transport-udp]
 type=transport
 protocol=udp
 bind=0.0.0.0:5060
+```
 
-;========================= CLASS AUTHENTICATION ===========================
+- `protocol=udp`: Spécifie que le transport utilise UDP.
+- `bind=0.0.0.0:5060`: Lie le transport UDP à toutes les interfaces sur le port 5060.
 
-[L1_class_auth](template-auth)
-password=1111
-username=l1
+### Configuration des Utilisateurs
 
-[L2_class_auth](template-auth)
-password=2222
-username=l2
+Les utilisateurs sont configurés en utilisant les templates définis précédemment et spécifient les informations d'authentification et les adresses :
 
-[L3_class_auth](template-auth)
-password=4712
-username=l3
-
-;========================= USERS CONFIGURATIONS ===========================
-;------------------------ exercie 02 ---------------------------
+```plaintext
 ; Utilisateur 6001
 [6001](template-L1)
 auth=6001_auth
@@ -406,144 +346,126 @@ password=1234
 
 [6001](template-aor)
 max_contacts=10
-
-; Utilisateur 6002
-[6002](template-L1)
-auth=6002_auth
-aors=6002
-transport=transport-udp
-context=etudiant
-
-[6002_auth](template-auth)
-username=6002
-password=2345
-
-[6002](template-aor)
-max_contacts=10
-
-; Utilisateur 6003
-[6003](template-L2)
-auth=6003_auth
-aors=6003
-transport=transport-udp
-context=delegue
-
-[6003_auth](template-auth)
-username=6003
-password=1234
-
-[6003](template-aor)
-max_contacts=10
-
-; Utilisateur 6004
-[6004](template-L3)
-auth=6004_auth
-aors=6004
-transport=transport-udp
-context=delegue
-
-[6004_auth](template-auth)
-username=6004
-password=1234
-
-[6004](template-aor)
-max_contacts=10
 ```
 
-### extensions.conf
+- `auth=6001_auth`: Associe l'utilisateur à un template d'authentification spécifique.
+- `aors=6001`: Associe l'utilisateur à un template AOR.
+- `context=delegue`: Définit le contexte pour cet utilisateur.
 
-```ini
-; Extensions Configuration
-;=========================
+### Configuration des Extensions
+
+**Contexte [etudiant]**
+
+```plaintext
 [etudiant]
 include => ivr_class_password
 
 exten => _60XX,1,Dial(PJSIP/${EXTEN},20)
 exten => _60XX,2,Voicemail(${EXTEN}@default)
 exten => _60XX,3,Hangup()
+```
 
-exten => 5020,1,Goto(admission,5020,1)
+- `Dial(PJSIP/${EXTEN},20)`: Compose l'extension spécifiée avec un délai de 20 secondes.
+- `Voicemail(${EXTEN}@default)`: Dirige les appels vers la messagerie vocale si l'appel est manqué.
 
-exten => 6100,1,Answer()
-exten => 6100,2,VoiceMailMain(${CALLERID(num)}@default)
-exten => 6100,3,Hangup()
+**Contexte [ivr_class_password]**
 
-;=================== IVR CLASS EMPLOI DU TEMPS ==================
-[ivr_class_password]
+Gère les appels entrants en demandant un mot de passe pour accéder aux emplois du temps :
 
+```plaintext
 exten => 9001,1,Set(CHANNEL(language)=fr)
 exten => 9001,2,Answer()
 exten => 9001,3,agi(googletts.agi,"Veuillez saisir le mot de passe de votre classe.",fr)
-exten => 9001,4,Read(CLASS_PASS,beep,5)
+exten => 9001,4,Read(CLASS_PASS,beep,5) 
 exten => 9001,5,NoOp(Mot de passe saisi: ${CLASS_PASS})
-exten => 9001,6,Wait(1)
-exten => 9001,n,GotoIf($["${CLASS_PASS}" = ""]?t,1)
-exten => 9001,n,agi(check_password.py,${CALLERID(num)},${CLASS_PASS})
-exten => 9001,n,NoOp(CLASS_AUTH_RESULT: ${CLASS_AUTH_RESULT}, CLASS_NAME: ${CLASS_NAME})
-exten => 9001,n,GotoIf($["${CLASS_AUTH_RESULT}" = "valid"]?class_menu,${CLASS_NAME},1)
-exten => 9001,n,Goto(ivr_class_password,i,1)
+```
 
-exten => i,1,Goto(class_menu,i,1)
-exten => t,1,Goto(ivr_class_password,9001,3)
+- `agi(googletts.agi,"...")`: Utilise un AGI (Asterisk Gateway Interface) pour synthétiser la parole avec Google TTS.
+- `Read(CLASS_PASS,beep,5)`: Lit le mot de passe saisi par l'utilisateur.
 
-[class_menu]
+**Contexte [class_menu]**
 
+Permet la consultation des emplois du temps en fonction de la classe :
+
+```plaintext
 exten => L1,1,Set(FILE_PATH=/var/lib/asterisk/sounds/custom/emploi_du_temps_L1.ulaw)
 exten => L1,n,ExecIf($[${STAT(e,${FILE_PATH})}]?Playback(custom/emploi_du_temps_L1):agi(googletts.agi,"Vous n'avez pas encore d'emploi du temps enregistré pour la classe L1.",fr))
-exten => L1,n,Hangup()
+```
 
-exten => L2,1,Set(FILE_PATH=/var/lib/asterisk/sounds/custom/emploi_du_temps_L2.ulaw)
-exten => L2,n,ExecIf($[${STAT(e,${FILE_PATH})}]?Playback(custom/emploi_du_temps_L2):agi(googletts.agi,"Vous n'avez pas encore d'emploi du temps enregistré pour la classe L2.",fr))
-exten => L2,n,Hangup()
+- `Set(FILE_PATH=...)`: Définit le chemin du fichier pour l'emploi du temps.
+- `ExecIf($[${STAT(e,${FILE_PATH})}]?Playback(...))`: Vérifie si le fichier existe et le lit, sinon, informe l'utilisateur.
 
-exten => L3,1,Set(FILE_PATH=/var/lib/asterisk/sounds/custom/emploi_du_temps_L3.ulaw)
-exten => L3,n,ExecIf($[${STAT(e,${FILE_PATH})}]?Playback(custom/emploi_du_temps_L3):agi(googletts.agi,"Vous n'avez pas encore d'emploi du temps enregistré pour la classe L3.",fr))
-exten => L3,n,Hangup()
+**Contexte [delegue]**
 
-exten => i,1,agi(googletts.agi,"Le mot de passe que vous avez saisi est incorrect. Tapez 1 pour réessayer ou 2 pour terminer.",fr)
-exten => i,2,WaitExten(20)
-exten => 1,1,Goto(ivr_class_password,9001,1)
-exten => 2,1,agi(googletts.agi,"Au revoir, merci de nous avoir contacté.",fr)
-exten => 2,n,Hangup()
-exten => t,1,Goto(i,1)
+Gère les actions des délégués :
 
-;------------------------- delegue gestionnaire -----------------------
-
-[delegue]
-include => etudiant
-
+```plaintext
 exten => 8888,1,Answer()
 exten => 8888,2,agi(googletts.agi,"Pour la gestion de votre classe, veuillez taper 1 pour changer le mot de passe ou taper 2 pour enregistrer le nouveau emploi du temps de votre classe",fr)
 exten => 8888,3,WaitExten(20)
+```
 
-exten => 1,1,Goto(credential,700,1)
-exten => 2,1,Goto(emploi_du_temps,1000,1)
+- `agi(googletts.agi,"...")`: Fournit des instructions pour la gestion de la classe.
+- `WaitExten(20)`: Attend que l'utilisateur saisisse une extension.
 
-exten => i,1,Goto(8888,2)
-exten => t,1,Goto(8888,2)
+**Contexte [credential]**
 
-[credential]
+Permet de changer le mot de passe de la classe :
+
+```plaintext
 exten => 700,1,Answer()
 exten => 700,2,agi(googletts.agi,"Veuillez entrer le nouveau mot de passe de votre classe",fr)
 exten => 700,3,Read(NEW_PASSWORD,,5)
-exten => 700,4,Wait(1)
-exten => 700,5,agi(googletts.agi,"Re entrer le mot de passe",fr)
-exten => 700,6,Read(CONFIRM_PASSWORD,,5)
-exten => 700,7,Wait(1)
-exten => 700,8,GotoIf($["${NEW_PASSWORD}" != "${CONFIRM_PASSWORD}"]?i,1)
-exten => 700,9,agi(update_password.py,${CALLERID(num)},${NEW_PASSWORD})
-exten => 700,n,agi(googletts.agi,"Le mot de passe de votre classe a bien été changé, merci de consulter notre service",fr)
-exten => 700,n,Hangup()
+```
 
-exten => i,1,agi(googletts.agi, "Les mots de passe que vous avez fournie ne sont pas identiques",fr)
-exten => i,2,Goto(credential,700,2)
+- `Read(NEW_PASSWORD,,5)`: Lit le nouveau mot de passe saisi par l'utilisateur.
+- `agi(update_password.py,${CALLERID(num)},${NEW_PASSWORD})`: Exécute un script Python pour mettre à jour le mot de passe.
 
-exten => t,1,Goto(700,2)
+**Contexte [emploi_du_temps]**
 
-[emploi_du_temps]
+Permet d'enregistrer les emplois du temps :
+
+```plaintext
 exten => 1000,1,Answer()
 exten => 1000,2,agi(getuserclass.py,${CALLERID(num)})
 exten => 1000,3,agi(googletts.agi,"Enregistrement de l'emploi du temps pour la classe ${USER_CLASS}.",fr)
-exten => 1000,4,Set(RECORD_FILE=/var/lib/asterisk/sounds/custom/emploi_du_temps_${USER_CLASS})
-exten => 1000,5,Record(${RECORD_FILE}.ulaw)
-exten => 
+```
+
+- `agi(getuserclass.py,${CALLERID(num)})`: Exécute un script Python pour obtenir la classe de l'utilisateur.
+- `Record(${RECORD_FILE}.ulaw)`: Enregistre l'emploi du temps dans un fichier audio.
+
+**Contexte [admission]**
+
+Gère les demandes d'admission :
+
+```plaintext
+exten => 5020,1,Set(CHANNEL(language)=fr)
+exten => 5020,2,agi(googletts.agi,"Bonjour, veuillez saisir la touche 1 pour le service d'orientation et le touche 2 pour le service d'inscription",fr)
+```
+
+- `agi(googletts.agi,"...")`: Fournit des instructions pour sélectionner le service d'orientation ou d'inscription.
+
+**Contexte [orientation]**
+
+Dirige les appels vers les services d'orientation selon le cycle :
+
+```plaintext
+exten => 1,1,Dial(PJSIP/5016,20)
+exten => 1,2,Dial(PJSIP/5017,20)
+exten => 2,1,Dial(PJSIP/5011&PJSIP
+
+/5012,20)
+```
+
+- `Dial(PJSIP/5016,20)`: Compose les extensions de l'orientation.
+
+**Contexte [inscription]**
+
+Gère les appels pour l'inscription :
+
+```plaintext
+exten => 101,1,Dial(PJSIP/5021,20)
+exten => 102,1,Dial(PJSIP/5022,20)
+```
+
+- `Dial(PJSIP/5021,20)`: Compose les extensions pour l'inscription.
