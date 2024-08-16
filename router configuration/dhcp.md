@@ -275,7 +275,7 @@ Pour connecter un routeur de RIP (R4) à un routeur d'OSPF (R8), nous utiliseron
    - **Sur R8 :**
 
      ```bash
-    
-
- R8# show ip route ospf
+     R8# show ip route ospf
      ```
+
+---
