@@ -1,213 +1,148 @@
-HAUTE DISPONIBILITE DE BASE DE DONNE
 
-Pour implémenter une haute disponibilité pour votre base de données, vous pouvez utiliser différentes solutions en fonction de votre système de gestion de bases de données (SGBD) et de vos besoins spécifiques. Voici une vue d'ensemble des méthodes couramment utilisées pour MySQL/MariaDB et PostgreSQL.
+---
 
-MySQL/MariaDB
-Option 1 : Réplication Master-Slave
-La réplication Master-Slave est une méthode courante pour assurer la haute disponibilité et la tolérance aux pannes.
+# HAUTE DISPONIBILITÉ DE BASE DE DONNÉES
 
-Option 1 : Réplication Master-Slave
-La réplication Master-Slave est une méthode courante pour assurer la haute disponibilité et la tolérance aux pannes.
+## 1. Réplication Master-Slave MySQL/MariaDB
 
-Configuration de Haute Disponibilité MySQL/MariaDB avec Réplication Master-Slave
---------------------------------------------------------------------------------
-Nous allons configurer une topologie de réplication Master-Slave avec MySQL/MariaDB sur deux serveurs :
+### Configuration de la Haute Disponibilité avec Réplication Master-Slave
 
-Master : 192.168.15.77
-Slave : 192.168.15.76
+#### Topologie
+- **Master** : 192.168.15.77
+- **Slave** : 192.168.15.76
 
-Étape 1 : Configuration du Serveur Master (192.168.15.77)
-----------------------------------------------------------
-Modifier le fichier de configuration MySQL/MariaDB :
+### Étape 1 : Configuration du Serveur Master (192.168.15.77)
 
-installer mysql-server
-# sudo apt update -y && apt install -y mysql-server
+1. **Installation de MySQL/MariaDB** :
+   ```bash
+   sudo apt update -y && apt install -y mysql-server
+   ```
 
-Éditez le fichier /etc/mysql/my.cnf ou /etc/mysql/mariadb.conf.d/50-server.cnf et ajoutez/modifiez les lignes suivantes :
-# nano /etc/mysql/my.cnf
+2. **Modification du fichier de configuration MySQL/MariaDB** :
+   Éditez `/etc/mysql/my.cnf` ou `/etc/mysql/mariadb.conf.d/50-server.cnf` et ajoutez/modifiez les lignes suivantes :
+   ```ini
+   [mysqld]
+   server-id = 1
+   log_bin = /var/log/mysql/mysql-bin.log
+   bind-address = 0.0.0.0
+   max_allowed_packet = 64M
+   ```
 
-ajoutez/modifiez les lignes suivantes :
+3. **Redémarrage du service MySQL** :
+   ```bash
+   sudo systemctl restart mysql
+   ```
 
-# [mysqld]
-# server-id = 1
-# log_bin = /var/log/mysql/mysql-bin.log
-# bind-address = 0.0.0.0
-# max_allowed_packet = 64M
+4. **Autoriser le trafic sur le port 3306** :
+   ```bash
+   sudo ufw allow 3306/tcp
+   ```
 
-puis redemarer le service mysql
-# sudo systemctl restart mysql
+5. **Créer un utilisateur pour la réplication** :
+   Connectez-vous à MySQL en tant que root :
+   ```sql
+   mysql -u root -p
+   CREATE USER 'replica'@'%' IDENTIFIED BY 'password';
+   GRANT REPLICATION SLAVE ON *.* TO 'replica'@'%';
+   FLUSH PRIVILEGES;
+   ```
 
-Autorisez le trafic sur le port 3306 :
-# sudo ufw allow 3306/tcp
+6. **Obtenir l'état du Master** :
+   ```sql
+   SHOW MASTER STATUS;
+   ```
+   Notez les valeurs `File` et `Position`.
 
-Créer un utilisateur pour la réplication :
-Connectez-vous à MySQL/MariaDB en tant qu'utilisateur root et exécutez les commandes suivantes : 
-# mysql -u root -p
-CREATE USER 'replica'@'%' IDENTIFIED BY 'password';
-GRANT REPLICATION SLAVE ON *.* TO 'replica'@'%';
-FLUSH PRIVILEGES;
+### Étape 2 : Configuration du Serveur Slave (192.168.15.76)
 
-Obtenir l'état du Master :
-Toujours dans MySQL/MariaDB, exécutez la commande suivante et notez les valeurs de File et Position :
-mysql> SHOW MASTER STATUS;
-+------------------+----------+--------------+------------------+-------------------+
-| File             | Position | Binlog_Do_DB | Binlog_Ignore_DB | Executed_Gtid_Set |
-+------------------+----------+--------------+------------------+-------------------+
-| mysql-bin.000001 |      753 |              |                  |                   |
-+------------------+----------+--------------+------------------+-------------------+
-1 row in set (0.00 sec)
+1. **Modification du fichier de configuration MySQL/MariaDB** :
+   Éditez `/etc/mysql/my.cnf` ou `/etc/mysql/mariadb.conf.d/50-server.cnf` et ajoutez/modifiez les lignes suivantes :
+   ```ini
+   [mysqld]
+   server-id = 2
+   max_allowed_packet = 64M
+   ```
 
+2. **Redémarrage du service MySQL/MariaDB** :
+   ```bash
+   sudo systemctl restart mysql
+   ```
 
-Étape 2 : Configuration du Serveur Slave (192.168.15.76)
--------------------------------------------------------
+3. **Initialiser la réplication sur le Slave** :
+   Connectez-vous à MySQL sur le Slave :
+   ```sql
+   CHANGE MASTER TO
+       MASTER_HOST='192.168.15.77',
+       MASTER_USER='replica',
+       MASTER_PASSWORD='password',
+       MASTER_LOG_FILE='mysql-bin.000001',
+       MASTER_LOG_POS=753;
+   START SLAVE;
+   ```
 
-Modifier le fichier de configuration MySQL/MariaDB :
-Éditez le fichier /etc/mysql/my.cnf ou /etc/mysql/mariadb.conf.d/50-server.cnf et ajoutez/modifiez les lignes suivantes :
-# [mysqld]
-# server-id = 2
-# max_allowed_packet = 64M
+4. **Vérifier la réplication** :
+   ```sql
+   SHOW SLAVE STATUS\G;
+   ```
 
-Redémarrer le service MySQL/MariaDB :
-# sudo systemctl restart mysql
+### Test de la Réplication
 
-Initialiser la réplication sur le Slave :
+1. **Sur le Master (192.168.15.77)** :
+   Créez une base de données et une table, puis insérez des données :
+   ```sql
+   CREATE DATABASE test_db;
+   USE test_db;
+   CREATE TABLE test_table (id INT PRIMARY KEY, data VARCHAR(100));
+   INSERT INTO test_table (id, data) VALUES (1, 'Hello, replication!');
+   ```
 
-Connectez-vous à MySQL/MariaDB en tant qu'utilisateur root sur le Slave et exécutez les commandes suivantes en remplaçant les valeurs MASTER_LOG_FILE et MASTER_LOG_POS par celles obtenues à partir du Master :
+2. **Sur le Slave (192.168.15.76)** :
+   Vérifiez que la base de données, la table et les données ont été répliquées.
 
-CHANGE MASTER TO
-    MASTER_HOST='192.168.15.77',
-    MASTER_USER='replica',
-    MASTER_PASSWORD='password',
-    MASTER_LOG_FILE='mysql-bin.000001',
-    MASTER_LOG_POS=753;
-START SLAVE;
+---
 
-Vérifier la réplication :
-Exécutez la commande suivante pour vérifier l'état de la réplication :
-mysql> SHOW SLAVE STATUS\G;
-*************************** 1. row ***************************
-               Slave_IO_State: Waiting for master to send event
-                  Master_Host: 192.168.15.73
-                  Master_User: replica
-                  Master_Port: 3306
-                Connect_Retry: 60
-              Master_Log_File: mysql-bin.000004
-          Read_Master_Log_Pos: 1818
-               Relay_Log_File: ubuntuserver16-relay-bin.000002
-                Relay_Log_Pos: 986
-        Relay_Master_Log_File: mysql-bin.000004
-             Slave_IO_Running: Yes
-            Slave_SQL_Running: Yes
-              Replicate_Do_DB:
-          Replicate_Ignore_DB:
-           Replicate_Do_Table:
-       Replicate_Ignore_Table:
-      Replicate_Wild_Do_Table:
-  Replicate_Wild_Ignore_Table:
-                   Last_Errno: 0
-                   Last_Error:
-                 Skip_Counter: 0
-          Exec_Master_Log_Pos: 1818
-              Relay_Log_Space: 1202
-              Until_Condition: None
-               Until_Log_File:
-                Until_Log_Pos: 0
-           Master_SSL_Allowed: No
-           Master_SSL_CA_File:
-           Master_SSL_CA_Path:
-              Master_SSL_Cert:
-            Master_SSL_Cipher:
-               Master_SSL_Key:
-        Seconds_Behind_Master: 0
-Master_SSL_Verify_Server_Cert: No
-                Last_IO_Errno: 0
-                Last_IO_Error:
-               Last_SQL_Errno: 0
-               Last_SQL_Error:
-  Replicate_Ignore_Server_Ids:
-             Master_Server_Id: 1
-                  Master_UUID: c3f9f797-3ead-11ef-986d-0800278b5601
-             Master_Info_File: /var/lib/mysql/master.info
-                    SQL_Delay: 0
-          SQL_Remaining_Delay: NULL
-      Slave_SQL_Running_State: Slave has read all relay log; waiting for more updates
-           Master_Retry_Count: 86400
-                  Master_Bind:
-      Last_IO_Error_Timestamp:
-     Last_SQL_Error_Timestamp:
-               Master_SSL_Crl:
-           Master_SSL_Crlpath:
-           Retrieved_Gtid_Set:
-            Executed_Gtid_Set:
-                Auto_Position: 0
-         Replicate_Rewrite_DB:
-                 Channel_Name:
-           Master_TLS_Version:
-1 row in set (0.00 sec)
+# SITE DYNAMIQUE AVEC PHP ET MySQL
 
+## 1. Configuration du Serveur Web avec PHP et MySQL
 
-ERROR:
-No query specified
+### Installation de PHP et MySQL
 
-
-Test de la Réplication
-Sur le Master (192.168.15.77) :
-
-Créez une base de données et une table, puis insérez des données :
-CREATE DATABASE test_db;
-USE test_db;
-CREATE TABLE test_table (id INT PRIMARY KEY, data VARCHAR(100));
-INSERT INTO test_table (id, data) VALUES (1, 'Hello, replication!');
-
-Sur le Slave (192.168.15.76) :
-Vérifiez que la base de données, la table et les données ont été répliquées :
-
-STOP SLAVE;
-RESET SLAVE;
-
-ca marche!
-
-
-Pour rendre le site dynamique en utilisant PHP et MySQL, vous devez effectuer plusieurs modifications et ajouts. Voici les étapes détaillées pour transformer le site statique en un site dynamique :
-
-1. Configurer le Serveur Web avec PHP et MySQL
-Installation de PHP et MySQL
-Sur vos serveurs backend, installez PHP et MySQL :
-
-bash
-Copier le code
+```bash
 sudo apt update
 sudo apt install php libapache2-mod-php php-mysql mysql-server
-Configuration de la Base de Données
-Connectez-vous à MySQL et configurez la base de données :
+```
 
-bash
-Copier le code
-sudo mysql -u root -p
-Créez une base de données et un utilisateur :
+### Configuration de la Base de Données
 
-sql
-Copier le code
-CREATE DATABASE projet_clement;
-CREATE USER 'user_clement'@'localhost' IDENTIFIED BY 'password';
-GRANT ALL PRIVILEGES ON projet_clement.* TO 'user_clement'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
-Créez une table pour stocker les informations dynamiques :
+1. **Connexion à MySQL** :
+   ```bash
+   sudo mysql -u root -p
+   ```
 
-sql
-Copier le code
-USE projet_clement;
-CREATE TABLE sections (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    section_name VARCHAR(255) NOT NULL,
-    content TEXT NOT NULL
-);
-2. Modifier les Fichiers HTML pour PHP
-Renommez votre fichier index.html en index.php et modifiez-le pour inclure du PHP afin de charger les données dynamiquement.
+2. **Création d'une base de données et d'un utilisateur** :
+   ```sql
+   CREATE DATABASE projet_clement;
+   CREATE USER 'user_clement'@'localhost' IDENTIFIED BY 'password';
+   GRANT ALL PRIVILEGES ON projet_clement.* TO 'user_clement'@'localhost';
+   FLUSH PRIVILEGES;
+   EXIT;
+   ```
 
-php
-Copier le code
+3. **Création d'une table pour stocker les informations dynamiques** :
+   ```sql
+   USE projet_clement;
+   CREATE TABLE sections (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       section_name VARCHAR(255) NOT NULL,
+       content TEXT NOT NULL
+   );
+   ```
+
+## 2. Modification des Fichiers HTML pour PHP
+
+Renommez votre fichier `index.html` en `index.php` et modifiez-le pour inclure du PHP.
+
+```php
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -263,41 +198,78 @@ Copier le code
     </footer>
 </body>
 </html>
-3. Insérer des Données dans la Base de Données
+```
+
+## 3. Insertion des Données dans la Base de Données
+
 Ajoutez du contenu dans votre base de données pour tester :
 
-sql
-Copier le code
+```sql
 INSERT INTO sections (section_name, content) VALUES
 ('Haute Disponibilité', 'La haute disponibilité est essentielle pour garantir que les services restent disponibles en cas de panne. Nous utilisons des techniques de redondance et de basculement pour assurer une disponibilité continue.'),
 ('Web', 'Les applications web doivent être robustes et réactives. Nous implémentons des architectures évolutives et résilientes pour assurer une performance optimale et une disponibilité continue.'),
 ('Base de Données', 'Les bases de données sont le cœur de nombreuses applications. Nous utilisons des stratégies de réplication et de sauvegarde pour assurer la continuité des données et leur disponibilité.'),
 ('LACP Cisco', 'Le protocole LACP (Link Aggregation Control Protocol) permet d\'agréger plusieurs liaisons Ethernet en une seule, offrant une bande passante accrue et une redondance en cas de défaillance d\'un lien.'),
 ('Dual WAN', 'La configuration Dual WAN permet d\'utiliser deux connexions Internet simultanément, offrant une redondance et une répartition de la charge pour une meilleure performance réseau.');
-4. Synchronisation des Serveurs Backend
-Utilisez rsync pour synchroniser les fichiers PHP et les configurations sur les serveurs backend :
+```
 
-Créez un script rsync sur chaque serveur pour synchroniser les fichiers depuis le serveur principal :
+## 4. Synchronisation des Serveurs Backend
 
-bash
-Copier le code
+
+### Synchronisation Automatisée des Fichiers sur les Serveurs
+
+Pour assurer une cohérence parfaite entre vos serveurs et garantir que les fichiers de votre site web sont toujours à jour sur tous les nœuds, vous pouvez mettre en place une synchronisation régulière des fichiers en utilisant `rsync`. Cette méthode permet de répliquer les modifications effectuées sur le serveur principal vers les serveurs secondaires.
+
+#### 1. Création du Script de Synchronisation
+
+Commencez par créer un script `rsync` sur votre serveur principal. Ce script va synchroniser les fichiers de votre site web vers les serveurs secondaires :
+
+```bash
 #!/bin/bash
+# Synchronisation des fichiers vers le premier serveur secondaire
 rsync -avz /var/www/site-static/ 192.168.1.76:/var/www/site-static/
+
+# Synchronisation des fichiers vers le second serveur secondaire
 rsync -avz /var/www/site-static/ 192.168.1.78:/var/www/site-static/
-Rendre le script exécutable et ajouter une tâche cron pour exécuter le script régulièrement :
+```
 
-bash
-Copier le code
+Ce script utilise `rsync`, un outil puissant de synchronisation qui compare les fichiers locaux avec ceux présents sur les serveurs distants et ne transfère que les différences, optimisant ainsi l'utilisation de la bande passante et les performances.
+
+#### 2. Rendre le Script Exécutable
+
+Pour pouvoir exécuter ce script, il faut d'abord lui donner les droits d'exécution :
+
+```bash
 chmod +x /usr/local/bin/sync_files.sh
-crontab -e
-Ajoutez la ligne suivante dans cron pour exécuter le script toutes les 5 minutes :
+```
 
-bash
-Copier le code
-*/5 * * * * /usr/local/bin/sync_files.sh
-5. Tests et Vérifications
-Accédez à votre site web via le navigateur pour vérifier que les données dynamiques s'affichent correctement.
-Simulez des pannes de serveurs pour tester la haute disponibilité et la redondance.
-Ces étapes vous permettront de transformer votre site statique en un site dynamique avec une haute disponibilité en utilisant PHP et MySQL.
+En plaçant le script dans `/usr/local/bin/`, vous le rendez accessible de manière globale sur le serveur.
 
+#### 3. Planification Automatique avec Cron
+
+Afin d'automatiser la synchronisation, vous allez configurer une tâche cron qui exécutera le script à des intervalles réguliers. Par exemple, pour une synchronisation toutes les 5 minutes :
+
+1. Ouvrez l'éditeur cron :
+   ```bash
+   crontab -e
+   ```
+
+2. Ajoutez la ligne suivante au fichier cron pour exécuter le script toutes les 5 minutes :
+   ```bash
+   */5 * * * * /usr/local/bin/sync_files.sh
+   ```
+
+Cette planification garantit que toutes les modifications apportées aux fichiers sur le serveur principal sont répliquées rapidement sur les serveurs secondaires, minimisant ainsi le risque de désynchronisation.
+
+#### 4. Tests et Vérifications
+
+Une fois la configuration terminée, il est essentiel de vérifier le bon fonctionnement du processus :
+
+- **Vérification de l'affichage des données dynamiques** : Accédez à votre site web via le navigateur pour vous assurer que les données dynamiques sont bien synchronisées et affichées correctement sur tous les serveurs.
+
+- **Simulation de pannes de serveurs** : Déconnectez temporairement un serveur secondaire ou le serveur principal pour vérifier que le site reste disponible grâce à la redondance des fichiers.
+
+Ces étapes permettent non seulement de transformer un site statique en site dynamique, mais aussi d'assurer une haute disponibilité en utilisant des mécanismes de synchronisation et de réplication automatiques avec `rsync` et `cron`.
+
+--- 
 
