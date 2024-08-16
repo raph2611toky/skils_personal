@@ -194,3 +194,11 @@ backend servers
 - Vérifiez que le trafic est redirigé vers l'autre serveur.
 
 ---
+
+```plaintext
+---
+
+Copyright © TOKY Nandrasana
+Étudiant de l'École Nationale de l'Informatique
+Date : 20 juillet 2024
+```

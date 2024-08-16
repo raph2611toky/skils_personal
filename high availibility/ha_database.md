@@ -273,3 +273,10 @@ Ces étapes permettent non seulement de transformer un site statique en site dyn
 
 --- 
 
+```plaintext
+---
+
+Copyright © TOKY Nandrasana
+Étudiant de l'École Nationale de l'Informatique
+Date : 23 juillet 2024
+```

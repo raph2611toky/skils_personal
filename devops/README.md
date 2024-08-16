@@ -1,5 +1,4 @@
-
----
+D'accord, voici la configuration mise à jour avec la topologie RIP modifiée et les détails complets pour le routage dynamique dans GNS3.
 
 ## Configuration des Protocoles de Routage dans GNS3
 
@@ -275,7 +274,15 @@ Pour connecter un routeur de RIP (R4) à un routeur d'OSPF (R8), nous utiliseron
    - **Sur R8 :**
 
      ```bash
-     R8# show ip route ospf
+    
+
+ R8# show ip route ospf
      ```
 
+```plaintext
 ---
+
+Copyright © TOKY Nandrasana
+Étudiant de l'École Nationale de l'Informatique
+Date : 16 août 2024
+```
