@@ -47,15 +47,15 @@ DevOps et DevSecOps sont des approches complémentaires visant à améliorer le 
 ## Ressources Complémentaires
 
 - **Livres** :
-  - *The Phoenix Project* par Gene Kim, Kevin Behr, et George Spafford
-  - *The DevOps Handbook* par Gene Kim, Patrick Debois, John Willis, et Jez Humble
-  - *Securing DevOps* par Julian Horn et James Wickett
+  - *[The Phoenix Project* par Gene Kim, Kevin Behr, et George Spafford](https://itrevolution.com/product/the-phoenix-project/)
+  - *[The DevOps Handbook* par Gene Kim, Patrick Debois, John Willis, et Jez Humble](https://www.amazon.com/DevOps-Handbook-World-Class-Reliability-Organizations/dp/1950508404)
+  - *[Securing DevOps* par Julian Horn et James Wickett](https://www.manning.com/books/securing-devops)
 
 - **Certifications** :
-  - AWS Certified DevOps Engineer
-  - Google Professional DevOps Engineer
-  - Microsoft Certified: DevOps Engineer Expert
-  - Certified DevSecOps Professional
+  - [AWS Certified DevOps Engineer](https://aws.amazon.com/certification/certified-devops-engineer-professional/)
+  - [Google Professional DevOps Engineer](https://cloud.google.com/learn/certification/cloud-devops-engineer)
+  - [Microsoft Certified: DevOps Engineer Expert](https://learn.microsoft.com/en-us/credentials/certifications/devops-engineer/)
+  - [Certified DevSecOps Professional](https://www.practical-devsecops.com/certified-devsecops-professional/)
 
 - **Communautés** :
   - Forums DevOps
