@@ -18,7 +18,7 @@
     sudo passwd newuser
     sudo usermod -aG sudo newuser
     ```
-  - **Documentation** : [Adduser Command](https://man7.org/linux/man-pages/man8/adduser.8.html)
+  - **Documentation** : [Manage user Commands](https://www.geeksforgeeks.org/7-linux-commands-for-managing-users/)
 
 - **Contrôle d’Accès** :
   - **Permissions de Fichiers** : `chmod`, `chown`, `chgrp`.
@@ -27,7 +27,7 @@
     chmod 750 /path/to/file
     chown user:group /path/to/file
     ```
-  - **Documentation** : [File Permissions](https://www.gnu.org/software/coreutils/manual/html_node/Changing-File-Attributes.html)
+  - **Documentation** : [File Permissions](https://linuxhandbook.com/linux-file-permissions/)
 
 - **Pare-feu** :
   - **UFW (Uncomplicated Firewall)** : `ufw enable`, `ufw allow`, `ufw deny`.
@@ -46,7 +46,7 @@
     sestatus
     sudo setenforce 0
     ```
-  - **Documentation** : [SELinux Project](https://selinuxproject.org/)
+  - **Documentation** : [SELinux Project](https://itslinuxfoss.com/all-basic-selinux-commands-you-need-to-know/)
 
 #### **Système**
 
@@ -58,7 +58,7 @@
     top
     sudo nice -n 10 command_to_run
     ```
-  - **Documentation** : [ps Command](https://man7.org/linux/man-pages/man1/ps.1.html)
+  - **Documentation** : [process management Commands](https://www.digitalocean.com/community/tutorials/process-management-in-linux)
 
 - **Gestion des Services** :
   - **Commandes** : `systemctl`, `service`.
@@ -68,7 +68,7 @@
     sudo systemctl status nginx
     sudo systemctl stop nginx
     ```
-  - **Documentation** : [systemctl Manual](https://www.freedesktop.org/wiki/Software/systemd/man/systemctl/)
+  - **Documentation** : [systemctl Manual](https://www.geeksforgeeks.org/systemctl-in-unix/), [create or remove services](https://www.baeldung.com/linux/create-remove-systemd-services)
 
 - **Gestion des Disques** :
   - **Commandes** : `fdisk`, `parted`, `mount`, `df`, `du`.
